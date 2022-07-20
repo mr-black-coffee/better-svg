@@ -17,7 +17,13 @@ const ALIGN_TYPES = {
 const reg = /translate\(\s*(\d+\.?\d*)\s+(\d+\.?\d*)\s*\)/i
 const reg2 = /matrix\(\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*\)/i
 const idProp = '_monitor_id'
-const defaultCenterTextClass = 'TextM'
+const obsIdProp = '_observer_id'
+
+let defaultLeftTextClass = 'text-l'
+let defaultCenterTextClass = 'text-m'
+let defaultRightTextClass = 'text-r'
+
+let defaultAlign = ALIGN_TYPES.CENTER
 
 // 每个实例为某种selector对应的文本节点类型
 export class SvgTextMonitor {
@@ -33,22 +39,29 @@ export class SvgTextMonitor {
         const {
             container,
             selector = '',
-            align = ALIGN_TYPES.CENTER,
+            align = defaultAlign,
             config = {
                 attributes: true,
                 characterData: true,
                 childList: true,
                 subtree: true,
-            }
+            },
+            root = document
         } = options
         let doms
-        if (container && container.innerHTML) {
-            if (selector && typeof selector === 'string') {
-                doms = container.querySelectorAll(selector)
-            } else {
-                doms = [container]
+        let containerDom = SvgTextMonitor.getDom(container)
+        if (containerDom && containerDom.innerHTML) {
+            let id = containerDom.getAttribute(idProp)
+            if (!id) {
+                id = SvgTextMonitor.createId()
+                containerDom.setAttribute(idProp, id)
             }
-            this._id = SvgTextMonitor.createId()
+            if (selector && typeof selector === 'string') {
+                doms = containerDom.querySelectorAll(selector)
+            } else {
+                doms = [containerDom]
+            }
+            this._id = id
             this._align = align
             this._config = config
             if (doms.length) {
@@ -56,7 +69,7 @@ export class SvgTextMonitor {
                     const _id = SvgTextMonitor.createId()
                     const observer = new MutationObserver(SvgTextMonitor.onChange)
                     // 标记
-                    textDom.setAttribute(idProp, _id)
+                    textDom.setAttribute(obsIdProp, _id)
                     const node = {
                         _id,
                         dom: textDom, // 文本节点
@@ -70,9 +83,9 @@ export class SvgTextMonitor {
                     observer.ownerId = this._id
                     observer._node = node
                     observer._id = _id
+                    observer.monitorId = this._id
                     observer.observe(textDom, config)
                     SvgTextMonitor.observes.push(observer)
-
                 })
             }
             SvgTextMonitor.instances.push(this)
@@ -111,6 +124,19 @@ export class SvgTextMonitor {
         idx = SvgTextMonitor.instances.findIndex(i => i._id === this._id)
         SvgTextMonitor.instances[idx] = null
         idx > -1 && SvgTextMonitor.instances.splice(idx, 1)
+    }
+
+    static config(options) {
+        options.defaultLeftTextClass && (defaultLeftTextClass = options.defaultLeftTextClass)
+        options.defaultCenterTextClass && (defaultCenterTextClass = options.defaultCenterTextClass)
+        options.defaultRightTextClass && (defaultRightTextClass = options.defaultRightTextClass)
+        options.defaultAlign && (defaultAlign = options.defaultAlign)
+    }
+
+    static getDom(selectorOrDom) {
+        return typeof selectorOrDom === 'string'
+            ? document.querySelector(selectorOrDom)
+            : selectorOrDom
     }
 
     static createId() {
@@ -190,36 +216,50 @@ export class SvgTextMonitor {
         }
     }
 
-    static startAll(selector = `.${defaultCenterTextClass}`, root = document) {
-        const textDoms = root.querySelectorAll(selector)
-        textDoms.forEach(textDom => {
-            if (!textDom.getAttribute(idProp)) {
-                new SvgTextMonitor({
-                    container: textDom
-                })
-            }
+    static clearDom(textDom) {
+        textDom && textDom.removeAttribute && textDom.removeAttribute(obsIdProp)
+    }
+
+    static startAll(container = document, selector = `.${defaultCenterTextClass}`) {
+        let containerDom = SvgTextMonitor.getDom(container)
+        if (!containerDom) {
+            return
+        }
+        new SvgTextMonitor({
+            container: containerDom,
+            selector
         })
     }
 
-    static clearDom(textDom) {
-        textDom && textDom.removeAttribute && textDom.removeAttribute(idProp)
-    }
-
-    static stopAll() {
-        SvgTextMonitor.observes.forEach(observer => {
+    static stopAll(container = document) {
+        let containerDom = SvgTextMonitor.getDom(container)
+        let id
+        if (containerDom && containerDom.getAttribute) {
+            id = containerDom.getAttribute(idProp)
+            if (!id) {
+                console && console.log('monitor not found!')
+                return
+            }
+        }
+        let observer
+        for (let len = SvgTextMonitor.observes.length, i = len - 1; i >= 0; i--) {
+            observer = SvgTextMonitor.observes[i]
+            if (containerDom && id && observer.monitorId !== id) {
+                continue
+            }
             SvgTextMonitor.clearDom(observer.node.dom)
             observer.node.dom = null
             observer.disconnect()
             observer = null
-        })
-        SvgTextMonitor.observes = []
+            SvgTextMonitor.observes.splice(i, 1)
+        }
     }
 
-    static destroyAll() {
-        SvgTextMonitor.stopAll()
-        SvgTextMonitor.instances.forEach(instance => {
-            instance = null
-        })
-        SvgTextMonitor.instances = []
-    }
+    // static destroyAll() {
+    //     SvgTextMonitor.stopAll()
+    //     SvgTextMonitor.instances.forEach(instance => {
+    //         instance = null
+    //     })
+    //     SvgTextMonitor.instances = []
+    // }
 }
