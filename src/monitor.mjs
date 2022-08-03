@@ -2,8 +2,8 @@
  * 监控SVG中的text类型节点并自动进行水平对齐
  */
 
-'use strict'
-
+ 'use strict'
+import { createId } from './tool.mjs'
 const TRANSFORM_TYPES = {
     TRANSLATE: 'translate',
     MATRIX: 'matrix',
@@ -15,7 +15,7 @@ const ALIGN_TYPES = {
     RIGHT: 'right'
 }
 const reg = /translate\(\s*(\d+\.?\d*)\s+(\d+\.?\d*)\s*\)/i
-const reg2 = /matrix\(\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*,\s*(\d+\.?\d*)\s*\)/i
+const reg2 = /matrix\(\s*(\d+\.?\d*)\s*,?\s*(\d+\.?\d*)\s*,?\s*(\d+\.?\d*)\s*,?\s*(\d+\.?\d*)\s*,?\s*(\d+\.?\d*)\s*,?\s*(\d+\.?\d*)\s*\)/i
 const idProp = '_monitor_id'
 const obsIdProp = '_observer_id'
 
@@ -53,7 +53,7 @@ export class SvgTextMonitor {
         if (containerDom && containerDom.innerHTML) {
             let id = containerDom.getAttribute(idProp)
             if (!id) {
-                id = SvgTextMonitor.createId()
+                id = createId()
                 containerDom.setAttribute(idProp, id)
             }
             if (selector && typeof selector === 'string') {
@@ -66,7 +66,7 @@ export class SvgTextMonitor {
             this._config = config
             if (doms.length) {
                 doms.forEach(textDom => {
-                    const _id = SvgTextMonitor.createId()
+                    const _id = createId()
                     const observer = new MutationObserver(SvgTextMonitor.onChange)
                     // 标记
                     textDom.setAttribute(obsIdProp, _id)
@@ -137,10 +137,6 @@ export class SvgTextMonitor {
         return typeof selectorOrDom === 'string'
             ? document.querySelector(selectorOrDom)
             : selectorOrDom
-    }
-
-    static createId() {
-        return `${Date.now()}${Math.random() * 100000}`
     }
 
     static recordInfo(node) {
