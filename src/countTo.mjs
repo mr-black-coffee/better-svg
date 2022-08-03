@@ -2,7 +2,6 @@ import {
     createId
 } from './tool.mjs'
 import { requestAnimationFrame, cancelAnimationFrame } from './requestAnimationFrame.js'
-import __WEBPACK_EXTERNAL_MODULE_echarts_lib_echarts__ from 'echarts-liquidfill'
 
 const STATES = {
     NOT_PROCESSING: 'not_processing',
