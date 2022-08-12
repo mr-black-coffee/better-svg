@@ -1,6 +1,6 @@
 {
   "name": "better-svg",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "description": "A svg file helper for web.",
   "keywords": [
     "svg",
@@ -35,6 +35,7 @@
     "webpack-cli": "^4.10.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ]
 }

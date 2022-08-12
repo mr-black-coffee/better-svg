@@ -16,7 +16,10 @@ yarn add better-svg
 ## 使用
 
 ```
-// test.vue
+// 
+<template>
+
+</template>
 <script>
 import { createSvg } from 'better-svg'
 export default {
@@ -24,7 +27,6 @@ export default {
 	methods: {
 		async init(){
 			let content = await loadSvg(this.svgSrc)
-		
 		}
 	}
 }

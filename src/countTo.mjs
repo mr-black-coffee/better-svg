@@ -12,40 +12,41 @@ const STATES = {
 
 export class CountTo {
     // 内部id
-    _id             = ''
+    _id                 = ''
     // 根dom
-    _container      = null
+    _container          = null
     // 选择器
-    _selector       = ''
+    _selector           = ''
     // 存在多个选择结果时的序号
-    _selectorIndex  = 0
+    _selectorIndex      = 0
     // dom
-    _dom            = null
+    _dom                = null
     // 起始值
-    _start          = 0
+    _start              = 0
     // 结束值
-    _end            = 0
+    _end                = 0
     // 小数位数
-    _decimals       = 0
+    _decimals           = 0
     // 小数位符号
-    _decimal        = '.'
+    _decimal            = '.'
     // 0: 从小到大，1: 从大到小
-    _direction      = 0
+    _direction          = 0
     // 时长
-    _duration       = 1000
+    _duration           = 1000
     // 自动执行
-    _autoplay       = true
+    _autoplay           = true
     // 数字分隔，毎3位数字增加逗号
+    _enableSeparator    = true
     // 分隔器
-    _separatorReg   = /(\d+)(\d{3})/
+    _separatorReg       = /(\d+)(\d{3})/
     // 分隔符, ','
-    _separator      = ','
+    _separator          = ','
     // 前缀
-    _prefix         = ''
+    _prefix             = ''
     // 后缀
-    _suffix         = ''
+    _suffix             = ''
     // 使用缓动
-    _useEasing      = true
+    _useEasing          = true
     // 缓动函数
     // t: progress, b:this.localStartVal, c: this.endVal - this.localStartVal, d: this.localDuration
     _easingFn       = (t, b, c, d) => {
@@ -76,6 +77,7 @@ export class CountTo {
         decimal,
         direction,
         duration,
+        enabelSeparator,
         separatorReg,
         separator,
         prefix,
@@ -107,28 +109,28 @@ export class CountTo {
             this._legal = false
             return this
         }
-        this._container = container
-        this._selector  = selector
-        this._end       = end
-        selectorIndex   && (this._selectorIndex = selectorIndex)
-        start           && (this._start = start)
-        decimals        && (this._decimals = decimals)
-        decimal         && (this._decimal = decimal)
-        direction       && (this._direction = direction)
-        duration        && (this._duration = duration)
-        separatorReg    && (this._separatorReg = separatorReg)
-        separator       && (this._separator = separator)
-        prefix          && (this._prefix = prefix)
-        suffix          && (this._suffix = suffix)
-        easingFn        && (this._easingFn = easingFn)
-        countDown       && (this.countDown = true)
-
+        this._container                 = container
+        this._selector                  = selector
+        this._end                       = end
+        selectorIndex                   && (this._selectorIndex = selectorIndex)
+        start                           && (this._start = start)
+        decimals                        && (this._decimals = decimals)
+        decimal                         && (this._decimal = decimal)
+        direction                       && (this._direction = direction)
+        duration                        && (this._duration = duration)
+        enableSeparator !== undefined   && (this._enableSeparator = enableSeparator)
+        separatorReg                    && (this._separatorReg = separatorReg)
+        separator                       && (this._separator = separator)
+        prefix                          && (this._prefix = prefix)
+        suffix                          && (this._suffix = suffix)
+        easingFn                        && (this._easingFn = easingFn)
+        countDown                       && (this.countDown = true)
         // dom
-        const doms      = container.querySelectorAll(selector)
-        this._dom       = doms[this?._selectorIndex ?? 0]
+        const doms                      = container.querySelectorAll(selector)
+        this._dom                       = doms[this?._selectorIndex ?? 0]
 
         // 初始值
-        this._dom       && (this._dom.innerHTML = this._start)
+        this._dom                       && (this._dom.innerHTML = this._start)
 
         // 执行链
         if (chainName && chainIndex !== void 0) {
@@ -226,8 +228,8 @@ export class CountTo {
         const x = num.split('.');
         let x1 = x[0];
         const x2 = x.length > 1 ? this._decimal + x[1] : '';
-        const rgx = /(\d+)(\d{3})/;
-        if (this._separator && !CountTo.isNumber(this._separator)) {
+        const rgx = this._separatorReg;
+        if (this._enableSeparator && this._separator && !CountTo.isNumber(this._separator)) {
             while (rgx.test(x1)) {
                 x1 = x1.replace(rgx, '$1' + this._separator + '$2');
             }
