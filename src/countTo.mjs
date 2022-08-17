@@ -77,7 +77,7 @@ export class CountTo {
         decimal,
         direction,
         duration,
-        enabelSeparator,
+        enableSeparator,
         separatorReg,
         separator,
         prefix,
