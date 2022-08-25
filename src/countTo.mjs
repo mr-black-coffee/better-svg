@@ -29,8 +29,6 @@ export class CountTo {
     _decimals           = 0
     // 小数位符号
     _decimal            = '.'
-    // 0: 从小到大，1: 从大到小
-    _direction          = 0
     // 时长
     _duration           = 1000
     // 自动执行
@@ -75,7 +73,6 @@ export class CountTo {
         end,
         decimals,
         decimal,
-        direction,
         duration,
         enableSeparator,
         separatorReg,
@@ -96,15 +93,6 @@ export class CountTo {
             legal = false
             console.log('countTo: end值必须为数字')
         }
-        if (direction) {
-            if (start < end) {
-                console.log('countTo: start值应大于等于end值')
-            }
-        } else {
-            if (start > end) {
-                console.log('countTo: start值应小于等于end值')
-            }
-        }
         if (!legal) {
             this._legal = false
             return this
@@ -116,7 +104,6 @@ export class CountTo {
         start                           && (this._start = start)
         decimals                        && (this._decimals = decimals)
         decimal                         && (this._decimal = decimal)
-        direction                       && (this._direction = direction)
         duration                        && (this._duration = duration)
         enableSeparator !== undefined   && (this._enableSeparator = enableSeparator)
         separatorReg                    && (this._separatorReg = separatorReg)
@@ -125,6 +112,8 @@ export class CountTo {
         suffix                          && (this._suffix = suffix)
         easingFn                        && (this._easingFn = easingFn)
         countDown                       && (this.countDown = true)
+        // 是否倒数
+        this._countDown                 = this._start > this._end
         // dom
         const doms                      = container.querySelectorAll(selector)
         this._dom                       = doms[this?._selectorIndex ?? 0]
